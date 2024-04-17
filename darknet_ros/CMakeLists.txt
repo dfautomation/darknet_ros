@@ -246,6 +246,14 @@ if (NOT EXISTS "${FILE}")
   execute_process(COMMAND wget -q https://github.com/leggedrobotics/darknet_ros/releases/download/1.1.4/yolov3.weights -P ${PATH})
 endif()
 
+# Download yolov7-tiny.weights
+set(FILE "${PATH}/yolov7-tiny.weights")
+message(STATUS "Checking and downloading yolov7-tiny.weights if needed ...")
+if (NOT EXISTS "${FILE}")
+  message(STATUS "... file does not exist. Downloading now ...")
+  execute_process(COMMAND wget -q https://github.com/AlexeyAB/darknet/releases/download/yolov4/yolov7-tiny.weights -P ${PATH})
+endif()
+
 #############
 ## Testing ##
 #############
