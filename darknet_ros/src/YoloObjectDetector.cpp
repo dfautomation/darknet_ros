@@ -162,6 +162,7 @@ void YoloObjectDetector::cameraCallback(const sensor_msgs::ImageConstPtr& msg) {
   cv_bridge::CvImagePtr cam_image;
 
   try {
+#if 0
     if (msg->encoding == "mono8" || msg->encoding == "bgr8" || msg->encoding == "rgb8") {
       cam_image = cv_bridge::toCvCopy(msg, msg->encoding);
     } else if ( msg->encoding == "bgra8") {
@@ -174,6 +175,16 @@ void YoloObjectDetector::cameraCallback(const sensor_msgs::ImageConstPtr& msg) {
     } else {
       ROS_ERROR("Image message encoding provided is not mono8, mono16, bgr8, bgra8, rgb8 or rgba8.");
     }
+#else
+    if (msg->encoding.find("C1") != std::string::npos) {
+      cam_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::TYPE_8UC1);
+      cv::Mat mono_image = cam_image->image;
+      cv::applyColorMap(mono_image, cam_image->image, cv::COLORMAP_BONE);
+    } else {
+      // Convert to OpenCV native BGR color
+      cam_image = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    }
+#endif
   } catch (cv_bridge::Exception& e) {
     ROS_ERROR("cv_bridge exception: %s", e.what());
     return;
@@ -204,7 +215,14 @@ void YoloObjectDetector::checkForObjectsActionGoalCB() {
   cv_bridge::CvImagePtr cam_image;
 
   try {
-    cam_image = cv_bridge::toCvCopy(imageAction, sensor_msgs::image_encodings::BGR8);
+    if (imageAction.encoding.find("C1") != std::string::npos) {
+      cam_image = cv_bridge::toCvCopy(imageAction, sensor_msgs::image_encodings::TYPE_8UC1);
+      cv::Mat mono_image = cam_image->image;
+      cv::applyColorMap(mono_image, cam_image->image, cv::COLORMAP_BONE);
+    } else {
+      // Convert to OpenCV native BGR color
+      cam_image = cv_bridge::toCvCopy(imageAction, sensor_msgs::image_encodings::BGR8);
+    }
   } catch (cv_bridge::Exception& e) {
     ROS_ERROR("cv_bridge exception: %s", e.what());
     return;
